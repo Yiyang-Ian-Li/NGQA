@@ -48,7 +48,7 @@ def merge_with_or(df1, df2):
     """
     # Merge the DataFrames
     merged_df = pd.merge(df1, df2, left_index=True, right_index=True, how='left', suffixes=('_df1', '_df2'))
-    merged_df = merged_df.fillna(0)
+    merged_df = merged_df.fillna(0).astype(int)
     
     # Find shared columns, excluding the key(s) used for merging
     shared_columns = set(df1.columns) & set(df2.columns)
