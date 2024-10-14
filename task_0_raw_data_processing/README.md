@@ -1,0 +1,10 @@
+# User Data Preparation 
+
+### UPDATE 10032024
+
+1. SEQN is now consistently stored as type str. This may cause small issues when merging tables together.
+2. `label` in df_demo is now `opioid_label` for better clarification. 
+3. BMI upper threshold is changed from 25.8 to 30 (obese), as too many Americans are overweighted.
+4. `age` column in df_demo is no longer dropped after the aggregation of `age_group`, as many health standards only apply to users over 18. 
+5. The user tagging pipeline and raw data generation pipeline have been merged together. 
+6. Besides from regular tagging, another set of status columns is implemented, so we can now tell is user is labeled as hypertension or obesity.
