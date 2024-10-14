@@ -13,5 +13,7 @@
 
 1. Now all tags in the table should be stored as integer 
 2. `user_info_data.csv` table now contains all information on the user side, next step is to: 
+
     a. Do a filtering based on the stauts columns for a rough filtering.
+    
     b. Prompt the data to generate a sentence that serves as the context of the user side info. 
