@@ -14,6 +14,9 @@
 1. Now all tags in the table should be stored as integer 
 2. `user_info_data.csv` table now contains all information on the user side, next step is to: 
 
-    a. Do a filtering based on the stauts columns for a rough filtering.
-    
+    a. Do a filtering based on the stauts columns for a rough filtering. (DONE)
+
     b. Prompt the data to generate a sentence that serves as the context of the user side info. 
+
+3. We move up the standards of hypertension from 130-80 to 140-90, which again is more strict standard.  
+4. We use the status for an analysis on the users. Please refer the details to our weekly reports. 
