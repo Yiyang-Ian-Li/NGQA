@@ -65,3 +65,64 @@ def merge_with_or(df1, df2):
         merged_df.drop(columns=[col_df1, col_df2], inplace=True)
     
     return merged_df
+
+
+def convert_tags(row, primary_nutrition_tags, nutrition_dict={}):
+    """
+    Converts high/low nutrition tags to a uniform dictionary format.
+    Returns a dictionary with tag names as keys and values as -1 (low) or 1 (high).
+    """
+    for nutrition_tag in primary_nutrition_tags:
+        if row[nutrition_tag] == 1:
+            tag_name = nutrition_tag[4:] if 'low' in nutrition_tag else nutrition_tag[5:]
+            nutrition_dict[tag_name] = -1 if 'low' in nutrition_tag else 1
+    
+    return nutrition_dict
+
+
+def generate_pairs(food_nutrition_dict, nutrition_list, user_list, count, level, food_id):
+    """
+    Helper function to generate pairs based on the specified difficulty level.
+    """
+    pair_results = []
+    loop_seed = food_id
+    while True:
+        loop_seed += 1
+        random.seed(loop_seed)
+        random.shuffle(nutrition_list)
+
+        # Set number of tags in common based on difficulty level
+        if level == 'easy':
+            num_tag_in_common = 1
+        else:
+            num_tag_in_common = random.randint(2, len(nutrition_list))
+
+        selected_nutrition = nutrition_list[:num_tag_in_common]
+        avoid_nutrition = nutrition_list[num_tag_in_common:]
+
+        # Shuffle user_list in place
+        random.shuffle(user_list)
+        for user in user_list:
+            # Check if user only has selected nutrition tags
+            if any(nutrition in user for nutrition in avoid_nutrition):
+                continue
+            if not all(nutrition in user for nutrition in selected_nutrition):
+                continue
+
+            # Specific condition for 'medium' and 'hard'
+            if level in ['medium', 'hard']:
+                tag_match_count = sum(
+                    1 if food_nutrition_dict[nutrition] == user[nutrition] else -1
+                    for nutrition in selected_nutrition
+                )
+                if (level == 'medium' and abs(tag_match_count) != len(selected_nutrition)) or \
+                   (level == 'hard' and abs(tag_match_count) == len(selected_nutrition)):
+                    continue
+
+            pair_results.append(user)
+            break
+
+        if len(pair_results) == count or loop_seed > 50 + food_id:
+            break
+
+    return pair_results

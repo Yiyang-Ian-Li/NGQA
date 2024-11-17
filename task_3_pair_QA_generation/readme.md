@@ -1,4 +1,4 @@
-# Generate benchmark
+# Benchmark generation
 
 ## Usage
 
