@@ -1,5 +1,6 @@
 import pandas as pd
 import random 
+import copy
 
 
 def concat_data_across_years(data_type, file_code, years, year_char):
@@ -75,8 +76,10 @@ def convert_tags(row, primary_nutrition_tags, nutrition_dict={}):
     """
     for nutrition_tag in primary_nutrition_tags:
         if row[nutrition_tag] == 1:
-            tag_name = nutrition_tag[4:] if 'low' in nutrition_tag else nutrition_tag[5:]
-            nutrition_dict[tag_name] = -1 if 'low' in nutrition_tag else 1
+            if 'low' in nutrition_tag:
+                nutrition_dict[nutrition_tag[4:]] = -1
+            else:
+                nutrition_dict[nutrition_tag[5:]] = 1
     
     return nutrition_dict
 
@@ -195,7 +198,7 @@ def generate_answer(food_tag, user):
     return answer_easy, answer_medium, answer_hard
 
 
-def generate_graph(food_id, user_id, food_info, user_info, food_primary_nutrition_tags, reference_dict):
+def generate_graph(food_id, user_id, food_info, food_ingredients, user_info, user_habits, food_primary_nutrition_tags, reference_dict):
     """
     Generates a graph structure representing relationships between a user, food, and their attributes.
 
@@ -218,6 +221,21 @@ def generate_graph(food_id, user_id, food_info, user_info, food_primary_nutritio
     food = food_info[food_info['food_id'] == food_id]
     node_list.append([1, {'name': food['food_desc'].item(), 'attr': food_id}])  # Node ID 1 is the food
 
+    # Add the food category node
+    food_category = food['WWEIA_desc'].iloc[0]
+    node_list.append([node_id, {'name': 'category', 'attr': food_category}])
+    edge_list.append([1, 'belongs to', node_id])
+    node_id += 1
+    
+    # Add the food ingredient nodes
+    food_ingredients = food_ingredients[food_ingredients['Food code'] == food_id]
+    food_ingredients = food_ingredients['Ingredient description'].tolist()
+    for ingredient in food_ingredients:
+        node_list.append([node_id, {'name': 'ingredient', 'attr': ingredient}])
+        edge_list.append([1, 'has', node_id])
+        node_id += 1
+
+
     # Add nutrition tags for the food
     for column in food_primary_nutrition_tags:
         if food[column].item() == 1:
@@ -229,6 +247,13 @@ def generate_graph(food_id, user_id, food_info, user_info, food_primary_nutritio
     node_list.append([0, {'name': 'user', 'attr': user_id}])  # Node ID 0 is the user
     user = user_info[user_info['SEQN'] == user_id]
 
+    # Add the user habits
+    habit_list = user_habits[user_habits['SEQN'] == user_id]['habitDesc'].tolist()
+    for habit in habit_list:
+        node_list.append([node_id, {'name': 'dietary habit', 'attr': habit}])
+        edge_list.append([0, 'has', node_id])
+        node_id += 1
+
     # Add user statuses and match them to nutrition tags
     for column, nutrition_tags in reference_dict.items():
         if user[column].item() == 1:  # If the user has this status
@@ -239,15 +264,18 @@ def generate_graph(food_id, user_id, food_info, user_info, food_primary_nutritio
 
             # Match user statuses to food nutrition tags or create new user nutrition tag nodes
             for nutrition_tag in nutrition_tags:
-                level, nutrition = nutrition_tag.split('_')
+                level, nutrition = nutrition_tag.split('_', maxsplit=1)
                 # Check for matching food nutrition tags
                 match_found = False
                 for node in node_list:
-                    if node[1]['name'] == 'food_nutrition_tag' and node[1]['attr'] == nutrition:
-                        relation = 'match' if level in node[1]['attr'] else 'contradict'
-                        edge_list.append([status_node_id, relation, node[0]])
-                        match_found = True
-                        break
+                    if node[1]['name'] == 'food_nutrition_tag':
+                        if nutrition in node[1]['attr']:
+                            if level in node[1]['attr']:
+                                edge_list.append([status_node_id, 'match', node[0]])
+                            else:
+                                edge_list.append([status_node_id, 'contradict', node[0]])
+                            match_found = True
+                            break
 
                 if not match_found:
                     # Add new user nutrition tag if no matching food nutrition tag is found
@@ -257,3 +285,23 @@ def generate_graph(food_id, user_id, food_info, user_info, food_primary_nutritio
 
     return node_list, edge_list
 
+
+def remove_implicit_tags(row, reference_dict):
+    '''
+    The original user_tagging.csv contains nutrition tags that are not infered from statuses we will use in the graph.
+    Returns a filtered user row with only explicit tags.
+    '''
+    new_row = copy.deepcopy(row)
+
+    # Set values to 0 except SEQN
+    for key in row.keys()[1:]:
+        new_row[key] = 0
+
+    # Only pass explicit tags to new_row
+    for status in reference_dict.keys():
+        if row[status] == 1:
+            new_row[status] = 1
+            for tag in reference_dict[status]:
+                new_row[tag] = 1
+
+    return new_row
