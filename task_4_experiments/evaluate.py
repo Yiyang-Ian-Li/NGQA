@@ -199,12 +199,17 @@ class Evaluator:
         Returns:
             dict: Dictionary of evaluation metrics (Accuracy, Precision, Recall, F1 Score, AUC Score).
         """
-        # Map text labels to binary values
-        y_true = ground_truths.map({'Yes': 1, 'No': 0})
-        y_pred = predictions.map({'Yes': 1, 'No': 0})
+         # Map text labels to binary values, marking invalid predictions as -1
+        valid_mapping = {'Yes': 1, 'No': 0}
+        y_true = ground_truths.map(valid_mapping).astype(int)
+        y_pred = predictions.map(valid_mapping).fillna(-1).astype(int) # In case yes or no is not in the answer. 
 
         if len(y_true) != len(y_pred):
             raise ValueError("Predictions and ground truths must have the same length.")
+
+        # Treat -1 predictions as always wrong (regardless of y_true)
+        incorrect_indices = (y_pred == -1)
+        y_pred[incorrect_indices] = 1 - y_true[incorrect_indices]  # Flip y_true to mark incorrectness
 
         # Compute metrics
         results = {

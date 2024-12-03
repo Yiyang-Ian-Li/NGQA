@@ -18,10 +18,11 @@ def main():
     # Define note and method prompts
     note_prompts = {
         "easy": "Important Note: Your output will strictly be Yes or No with no other words.",
-        "medium": "Important Note: You output must be strictly, with no extra words, separated by comma, a list of nutrients with high or low before the nutrients among these options: carb, protein, sugar, sodium, cholesterol, \
+        "medium": "Important Note: You output must be strictly, with no extra words, separated by comma, \
+            a list of nutrients with high or low before the nutrients among these options: carb, protein, sugar, sodium, cholesterol, \
             saturated_fat, calorie. For example, the output is: high_carb, low_protein, high_sugar.",
-        "hard": "Important Note: You output must be a Yes or No followed by strictly a list of nutrients with high or low as prefix among these options: carb, protein, sugar, sodium, cholesterol, \
-            saturated fat, calorie. For example, the output is: Yes, because the food is high carb, low protein, high sugar.",
+        "hard": "Important Note: You output must be a Yes or No followed by strictly a list of nutrients with high or low as prefix among these options: \
+            carb, protein, sugar, sodium, cholesterol, saturated fat, calorie. For example, the output is: Yes, because the food is high carb, low protein, high sugar.",
     }
 
     method_prompts = {
@@ -66,9 +67,9 @@ if __name__ == "__main__":
     parser.add_argument("--is_sample", type=bool, default=True, help="Whether to sample data or use the full dataset.")
     parser.add_argument("--n", type=int, default=100, help="Number of rows to sample if sampling is enabled.")
     
-    parser.add_argument("--task_levels", nargs="+", default=["easy", "medium", "hard"], help="List of task levels to evaluate.")
+    parser.add_argument("--task_levels", nargs="+", default=["medium"], help="List of task levels to evaluate.")
     parser.add_argument("--question_levels", nargs="+", default=["easy", "medium", "hard"], help="List of question levels to evaluate.")
-    parser.add_argument("--methods", nargs="+", default=["plain", "KAPING"], help="List of methods to use for retrieval.")
+    parser.add_argument("--methods", nargs="+", default=["plain"], help="List of methods to use for retrieval.")
     
     args = parser.parse_args()
 
