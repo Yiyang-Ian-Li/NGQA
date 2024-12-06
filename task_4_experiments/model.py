@@ -49,17 +49,17 @@ class Retriever:
     def retrieve(self, method="plain", **kwargs):
         """
         Apply the specified retrieval method to all graphs in the dataset.
-        
+
         Args:
-            method (str): Retrieval method ('plain', 'kaping', 'custom').
+            method (str): Retrieval method ('plain', 'KAPING', 'custom', 'zero_cot').
             **kwargs: Additional arguments for the retrieval methods.
-        
+
         Returns:
             list: List of retrieved subgraphs.
         """
         retrieved_graphs = []
         for graph in self.graphs:
-            if method == "plain":
+            if method == "plain" or method == "zero_cot" or method == "cot_bag":
                 retrieved_graphs.append(self.plain_retriever(graph))
             elif method == "KAPING":
                 retrieved_graphs.append(self.KAPING_retriever(graph))
@@ -116,6 +116,7 @@ class Augmenter:
 import time
 import logging
 from tqdm import tqdm
+import openai 
 
 class Generator:
     def __init__(self, api_key, model_name, note_prompt, method_prompt, sleeptime=0):
@@ -124,19 +125,24 @@ class Generator:
         
         Args:
             api_key (str): API key for authentication.
-            model_name (str): Name of the model to use (e.g., "llama3-70b").
+            model_name (str): Name of the model to use (e.g., "llama3-70b", "gpt-3.5-turbo").
             note_prompt (str): The prompt for important notes. Used for limit the output format. 
             method_prompt (str): The prompt unique to the baseline method for better task clarification.
             sleeptime (int): Time (in seconds) to sleep between API calls to avoid rate limiting.
         """
         self.api_key = api_key
-        self.llama = LlamaAPI(self.api_key)  # Initialize API client with the key
-
         self.model_name = model_name
         self.system_prompt = "Act as a nutritionist. Analyze if a given food is healthy to a user and why."
         self.note_prompt = note_prompt
         self.method_prompt = method_prompt
         self.sleeptime = sleeptime
+
+        if self.model_name == "llama3.1-70b":
+            self.llama = LlamaAPI(self.api_key)  
+        elif self.model_name == "gpt-3.5-turbo" or self.model_name == "gpt-4o-mini":
+            openai.api_key = self.api_key 
+        else:
+            raise ValueError(f"Unsupported model: {self.model_name}")
 
         logging.basicConfig(level=logging.INFO)
         self.logger = logging.getLogger(__name__)
@@ -147,7 +153,7 @@ class Generator:
         """
         return f"{question}. {self.method_prompt}. {textualized_graph}. {self.note_prompt}"
 
-    def query_api(self, prompt):
+    def query_llama(self, prompt):
         api_request_json = {
             "model": self.model_name,
             "messages": [
@@ -155,14 +161,57 @@ class Generator:
                 {"role": "user", "content": prompt},
             ]
         }
-
         try:
-            # Make API request
             response = self.llama.run(api_request_json)
-            return response.json()['choices'][0]['message']['content']
+            content = response.json().get('choices', [{}])[0].get('message', {}).get('content', "No content returned.")
+            return content
         except Exception as e:
-            self.logger.error(f"API Error: {e}")
+            self.logger.error(f"LLama API Error for prompt '{prompt}': {e}")
             return "API Error"
+
+    def query_gpt_35_turbo(self, prompt, retries=3, delay=2):
+        for attempt in range(retries):
+            try:
+                response = openai.ChatCompletion.create(
+                    model=self.model_name,
+                    messages=[
+                        {"role": "system", "content": self.system_prompt},
+                        {"role": "user", "content": prompt}
+                    ],
+                    temperature=0
+                )
+                return response.choices[0].message.content
+            except Exception as e:
+                self.logger.error(f"GPT-3.5-turbo API Error on attempt {attempt + 1}: {e}")
+                time.sleep(delay)
+        return "API Error after multiple retries"
+    
+    def query_gpt_4o_mini(self, prompt, retries=3, delay=2):
+        for attempt in range(retries):
+            try:
+                response = openai.ChatCompletion.create(
+                    model=self.model_name,
+                    messages=[
+                        {"role": "system", "content": self.system_prompt},
+                        {"role": "user", "content": prompt}
+                    ],
+                    temperature=0  # Adjust temperature if needed
+                )
+                return response.choices[0].message.content
+            except Exception as e:
+                self.logger.error(f"GPT-4o-mini API Error on attempt {attempt + 1}: {e}")
+                time.sleep(delay)
+        return "API Error after multiple retries"
+
+    def query_api(self, prompt):
+        if self.model_name == "llama3.1-70b":
+            return self.query_llama(prompt)
+        elif self.model_name == "gpt-3.5-turbo":
+            return self.query_gpt_35_turbo(prompt)
+        elif self.model_name == "gpt-4o-mini":
+            return self.query_gpt_4o_mini(prompt)
+        else:
+            raise ValueError(f"Unsupported model: {self.model_name}")
 
     def generate_predictions(self, questions, textualized_graphs):
         """
@@ -177,14 +226,12 @@ class Generator:
         """
         if len(questions) != len(textualized_graphs):
             raise ValueError("The number of questions and textualized graphs must be the same.")
-
+        
+        print(f"Using model: {self.model_name}")
         predictions = []
-
-        # Generate and query prompts
         for question, textualized_graph in tqdm(zip(questions, textualized_graphs), desc="Generating Predictions", total=len(questions)):
             prompt = self.generate_prompt(question, textualized_graph)
             prediction = self.query_api(prompt)
             predictions.append(prediction)
             time.sleep(self.sleeptime)
-
         return predictions

@@ -28,6 +28,8 @@ def main():
     method_prompts = {
         "plain": "Below are the extra information you use to answer the question, note that you should not use your general knowledge and the answer is among this information.",
         "KAPING": "Below are the extra information you use to answer the question, note that you should not use your general knowledge and the answer is among this information.",
+        "zero_cot": "Let's think step by step.",
+        "cot_bag": "Let's construct a graph with the nodes and edges first."
     }
 
     # Initialize dataset
