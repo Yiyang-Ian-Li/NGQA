@@ -1,4 +1,6 @@
 import os
+from dotenv import load_dotenv
+load_dotenv()
 import argparse
 from dataset import Dataset
 from model import Retriever, Augmenter, Generator
@@ -18,11 +20,11 @@ def main():
     # Define note and method prompts
     note_prompts = {
         "easy": "Important Note: Your output will strictly be Yes or No with no other words.",
-        "medium": "Important Note: You output must be strictly, with no extra words, separated by comma, \
+        "medium": "Important Note: Your output must be strictly, with no extra words, separated by comma, \
             a list of nutrients with high or low before the nutrients among these options: carb, protein, sugar, sodium, cholesterol, \
             saturated_fat, calorie. For example, the output is: high_carb, low_protein, high_sugar.",
-        "hard": "Important Note: You output must be a Yes or No followed by strictly a list of nutrients with high or low as prefix among these options: \
-            carb, protein, sugar, sodium, cholesterol, saturated fat, calorie. For example, the output is: Yes, because the food is high carb, low protein, high sugar.",
+        "hard": "Important Note: Your output must be a Yes or No followed by strictly a list of nutrients with high or low as prefix among these options: \
+            carb, protein, sugar, sodium, cholesterol, saturated fat, calorie. For example, the output is: Yes, because the food is high in carb, low in protein, high in sugar.",
     }
 
     method_prompts = {
@@ -66,12 +68,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run multi-level NutriGraphQA benchmark evaluation.")
     parser.add_argument("--file_path", type=str, default="./processed_data/NutriGraphQA_benchmark.csv", help="Path to the dataset file.")
     parser.add_argument("--api_key", type=str, 
-                        default=os.getenv("API_KEY"), 
+                        # default=os.getenv('LLAMA_API_KEY'), 
+                        default=os.getenv('OPENAI_API_KEY'),
                         help="API key for the model.")
     parser.add_argument("--model_name", type=str, 
-                        default="llama3.1-70b",
+                        # default="llama3.1-70b",
                         # default="gpt-3.5-turbo", 
-                        # default="gpt-4o-mini",
+                        default="gpt-4o-mini",
                         help="Model name for generation.")
     parser.add_argument("--is_sample", type=bool, default=True, help="Whether to sample data or use the full dataset.")
     parser.add_argument("--n", type=int, default=100, help="Number of rows to sample if sampling is enabled.")
