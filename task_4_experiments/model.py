@@ -6,8 +6,8 @@ from openai import OpenAI
 
 from utils import find_relations, prune_relations, find_entities, prune_entities, convert_to_sg
 
-# import warnings
-# warnings.filterwarnings("ignore")
+import warnings
+warnings.filterwarnings("ignore")
 
 
 class Retriever:
