@@ -2,18 +2,22 @@ import time
 from tqdm import tqdm
 import logging
 from llamaapi import LlamaAPI
+from openai import OpenAI
 
-import warnings
-warnings.filterwarnings("ignore")
+from utils import find_relations, prune_relations, find_entities, prune_entities, convert_to_sg
+
+# import warnings
+# warnings.filterwarnings("ignore")
 
 
 class Retriever:
-    def __init__(self, graphs):
+    def __init__(self, graphs, model_name=''):
         """
         Initialize the Retriever with a list of graphs.
         Args: graphs (list): List of NetworkX graphs.
         """
         self.graphs = graphs
+        self.model_name = model_name
 
     def plain_retriever(self, graph):
         """
@@ -40,11 +44,64 @@ class Retriever:
         # Create a subgraph with selected nodes
         return graph.subgraph(nodes_to_include)
 
-    def custom_retriever(self, graph):
+    def tog_retriever(self, graph, api_key, question):
         """
         Custom retrieval method: Implement your own retrieval logic here.
         """
-        pass
+        # args for ToG
+        depth = 3
+        width = 5
+        
+        # Initialize the OpenAI client
+        if 'llama' in self.model_name:
+            client = LlamaAPI(api_key)
+        else:
+            client = OpenAI(api_key=api_key)
+        
+        # Initial raw subgraph
+        reasoning_path_list = [[graph.nodes[0]['attr']], [graph.nodes[1]['attr']]]
+        
+        # Start thinking
+        for i in range(depth):
+            
+            # Relation's round
+            candidate_reasoning_path_list = []
+            for reasoning_path in reasoning_path_list:
+                # find new
+                new_reasoning_path_list = find_relations(graph, reasoning_path)
+                if new_reasoning_path_list != []:
+                    candidate_reasoning_path_list.extend(new_reasoning_path_list)
+                else:
+                    candidate_reasoning_path_list.append(reasoning_path)
+            # Prune
+            candidate_reasoning_path_list = [path for path in candidate_reasoning_path_list if len(path) >= (i + 1) * 2]
+            if i > 1:
+                reasoning_path_list = prune_relations(client, candidate_reasoning_path_list, question, self.model_name, width)
+            else:
+                reasoning_path_list = candidate_reasoning_path_list
+            
+            # Entity's round
+            candidate_reasoning_path_list = []
+            for reasoning_path in reasoning_path_list:
+                # find new
+                new_reasoning_path_list = find_entities(graph, reasoning_path)
+                if new_reasoning_path_list != []:
+                    candidate_reasoning_path_list.extend(new_reasoning_path_list)
+                else:
+                    candidate_reasoning_path_list.append(reasoning_path)
+            # Prune
+            if i > 1:
+                reasoning_path_list = prune_entities(client, candidate_reasoning_path_list, question, self.model_name, width)
+            else:
+                reasoning_path_list = candidate_reasoning_path_list
+            
+            # Return the subgraphs if the depth is reached
+            if i == depth - 1:
+                # for reasoning_path in reasoning_path_list:
+                #     print(reasoning_path)
+                subgraph = convert_to_sg(graph, reasoning_path_list)
+                # print(subgraph)
+                return subgraph
         
     def retrieve(self, method="plain", **kwargs):
         """
@@ -58,13 +115,13 @@ class Retriever:
             list: List of retrieved subgraphs.
         """
         retrieved_graphs = []
-        for graph in self.graphs:
-            if method == "plain":
+        for i, graph in tqdm(enumerate(self.graphs), desc="Retrieving Subgraphs", total=len(self.graphs)):
+            if method == "plain" or method == "zero_cot" or method == "cot_bag":
                 retrieved_graphs.append(self.plain_retriever(graph))
             elif method == "KAPING":
                 retrieved_graphs.append(self.KAPING_retriever(graph))
-            elif method == "custom":
-                retrieved_graphs.append(self.custom_retriever(graph))
+            elif method == 'ToG':
+                retrieved_graphs.append(self.tog_retriever(graph, api_key=kwargs['api_key'], question=kwargs['questions'][i]))
             else:
                 raise ValueError(f"Unknown retrieval method: {method}")
         return retrieved_graphs
@@ -130,8 +187,11 @@ class Generator:
             sleeptime (int): Time (in seconds) to sleep between API calls to avoid rate limiting.
         """
         self.api_key = api_key
-        self.llama = LlamaAPI(self.api_key)  # Initialize API client with the key
-
+        if 'llama' in model_name:
+            self.llama = LlamaAPI(self.api_key)  # Initialize API client with the key
+        elif 'gpt' in model_name:
+            self.gpt = OpenAI(api_key=self.api_key)
+        
         self.model_name = model_name
         self.system_prompt = "Act as a nutritionist. Analyze if a given food is healthy to a user and why."
         self.note_prompt = note_prompt
@@ -139,6 +199,7 @@ class Generator:
         self.sleeptime = sleeptime
 
         logging.basicConfig(level=logging.INFO)
+        logging.getLogger("httpx").setLevel(logging.WARNING)
         self.logger = logging.getLogger(__name__)
 
     def generate_prompt(self, question, textualized_graph):
@@ -147,22 +208,34 @@ class Generator:
         """
         return f"{question}. {self.method_prompt}. {textualized_graph}. {self.note_prompt}"
 
-    def query_api(self, prompt):
-        api_request_json = {
-            "model": self.model_name,
-            "messages": [
-                {"role": "system", "content": self.system_prompt},
-                {"role": "user", "content": prompt},
-            ]
-        }
-
-        try:
-            # Make API request
-            response = self.llama.run(api_request_json)
-            return response.json()['choices'][0]['message']['content']
-        except Exception as e:
-            self.logger.error(f"API Error: {e}")
-            return "API Error"
+    def query_api(self, prompt, retries=3, delay=2):
+        messages = [
+            {"role": "system", "content": self.system_prompt},
+            {"role": "user", "content": prompt},
+        ]
+        
+        for attempt in range(retries):
+            try:
+                if 'llama' in self.model_name:
+                    api_request_json = {
+                        "model": self.model_name,
+                        "messages": messages
+                    }
+                    response = self.llama.run(api_request_json).json()['choices'][0]['message']['content']
+                    
+                elif 'gpt' in self.model_name:  
+                    response = self.gpt.chat.completions.create(
+                        model=self.model_name,
+                        messages=messages,
+                        temperature=0
+                    ).choices[0].message.content
+                
+                return response
+            except Exception as e:
+                self.logger.error(f"API Error: {e}")
+                time.sleep(delay)
+        
+        return "API Error after multiple retries"
 
     def generate_predictions(self, questions, textualized_graphs):
         """
