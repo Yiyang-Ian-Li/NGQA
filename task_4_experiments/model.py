@@ -6,8 +6,8 @@ from openai import OpenAI
 
 from utils import find_relations, prune_relations, find_entities, prune_entities, convert_to_sg
 
-# import warnings
-# warnings.filterwarnings("ignore")
+import warnings
+warnings.filterwarnings("ignore")
 
 
 class Retriever:
@@ -100,9 +100,14 @@ class Retriever:
                 # for reasoning_path in reasoning_path_list:
                 #     print(reasoning_path)
                 subgraph = convert_to_sg(graph, reasoning_path_list)
-                # print(subgraph)
                 return subgraph
-        
+            
+    def custom_retriever(self, graph):
+        """
+        Custom retrieval method: Implement your own retrieval logic here.
+        """
+        pass
+    
     def retrieve(self, method="plain", **kwargs):
         """
         Apply the specified retrieval method to all graphs in the dataset.
@@ -122,6 +127,8 @@ class Retriever:
                 retrieved_graphs.append(self.KAPING_retriever(graph))
             elif method == 'ToG':
                 retrieved_graphs.append(self.tog_retriever(graph, api_key=kwargs['api_key'], question=kwargs['questions'][i]))
+            elif method == 'custom':
+                retrieved_graphs.append(self.custom_retriever(graph))
             else:
                 raise ValueError(f"Unknown retrieval method: {method}")
         return retrieved_graphs
