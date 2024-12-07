@@ -77,16 +77,16 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run multi-level NutriGraphQA benchmark evaluation.")
     parser.add_argument("--file_path", type=str, default="./processed_data/NutriGraphQA_benchmark.csv", help="Path to the dataset file.")
     parser.add_argument("--api_key", type=str, 
-                        # default=os.getenv('LLAMA_API_KEY'), 
-                        default=os.getenv('OPENAI_API_KEY'),
+                        default=os.getenv('LLAMA_API_KEY'), 
+                        # default=os.getenv('OPENAI_API_KEY'),
                         help="API key for the model.")
     parser.add_argument("--model_name", type=str, 
-                        # default="llama3.1-70b",
+                        default="llama3.1-70b",
                         # default="gpt-3.5-turbo", 
-                        default="gpt-4o-mini",
+                        # default="gpt-4o-mini",
                         help="Model name for generation.")
     parser.add_argument("--is_sample", type=bool, default=True, help="Whether to sample data or use the full dataset.")
-    parser.add_argument("--n", type=int, default=1000, help="Number of rows to sample if sampling is enabled.")
+    parser.add_argument("--n", type=int, default=100, help="Number of rows to sample if sampling is enabled.")
     
     parser.add_argument("--task_levels", nargs="+", default=["easy", "medium", "hard"], help="List of task levels to evaluate.")
     parser.add_argument("--question_levels", nargs="+", default=["easy", "medium", "hard"], help="List of question levels to evaluate.")
