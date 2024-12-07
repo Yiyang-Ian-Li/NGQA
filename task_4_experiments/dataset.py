@@ -13,11 +13,14 @@ class Dataset:
         """
         self.data = pd.read_csv(file_path)
 
-    def task_level_filtering(self, task_level):
+    def task_level_filtering(self, task_level, data):
         """
         Filter rows based on the task level.
-        Args: task_level (str): Task level ('easy', 'medium', 'hard').
-        Returns: pd.DataFrame: Filtered rows for the specified task level.
+        Args:   
+            task_level (str): Task level ('easy', 'medium', 'hard').
+            data (pd.DataFrame): DataFrame containing the data to filter.
+        Returns: 
+            pd.DataFrame: Filtered rows for the specified task level.
         """
         if task_level not in ['easy', 'medium', 'hard']:
             raise ValueError("Invalid task level. Must be 'easy', 'medium', or 'hard'.")
@@ -26,7 +29,7 @@ class Dataset:
         answer_column = f"answer_{task_level}"
 
         # Filter rows where the question and answer columns for the task level are not null
-        filtered_data = self.data[self.data[question_column].notnull() & self.data[answer_column].notnull()]
+        filtered_data = data[data[question_column].notnull() & data[answer_column].notnull()]
         return filtered_data
 
     def question_level_filtering(self, question_level):
@@ -111,7 +114,7 @@ class Dataset:
         filtered_data = self.question_level_filtering(question_level)
 
         # Filter by task level
-        filtered_data = self.task_level_filtering(task_level)
+        filtered_data = self.task_level_filtering(task_level, filtered_data)
 
         # Sample rows if required
         if sample:
