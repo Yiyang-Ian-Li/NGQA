@@ -123,7 +123,7 @@ class Retriever:
         """
         retrieved_graphs = []
         for i, graph in tqdm(enumerate(self.graphs), desc="Retrieving Subgraphs", total=len(self.graphs)):
-            if method == "plain" or method == "zero_cot" or method == "cot_bag":
+            if method == "plain" or method == "Zero_CoT" or method == "CoT_BaG":
                 retrieved_graphs.append(self.plain_retriever(graph))
             elif method == "KAPING":
                 retrieved_graphs.append(self.KAPING_retriever(graph))
@@ -262,7 +262,7 @@ class Generator:
         logging.getLogger("httpx").setLevel(logging.WARNING)
         self.logger = logging.getLogger(__name__)
 
-    def generate_prompt(self, question, textualized_graph):
+    def generate_prompt(self, question, textualized_graph, method=""):
         """
         Generate a prompt by combining question, method_prompt, textualized_graph, and note_prompt.
         """
@@ -316,7 +316,9 @@ class Generator:
         # Generate and query prompts
         for question, textualized_graph in tqdm(zip(questions, textualized_graphs), desc="Generating Predictions", total=len(questions)):
             prompt = self.generate_prompt(question, textualized_graph)
+            print("Prompt: ", prompt)
             prediction = self.query_api(prompt)
+            print("Answer:", prediction)
             predictions.append(prediction)
             time.sleep(self.sleeptime)
 
