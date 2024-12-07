@@ -220,7 +220,7 @@ def generate_paragraph_cot_bag(textualized_triplets):
     paragraph = (
         # f"You are given a directed graph with these nodes: {node_list}. "
         # f"And the edges are: {edge_list}. Let's construct a graph with the nodes and edges first."
-        f"You are given a directed graph where the nodes and edges are: {edge_list}. Let's construct a graph with the nodes and edges first, then answer the question."
+        f"You are given a directed graph where the nodes and edges are: {edge_list}. Your output must strictly adhere to the following guideline."
     )
 
     # print("Debug: Generated paragraph:", paragraph)  # Debugging
