@@ -62,17 +62,17 @@ def find_relations(graph, path):
 
 
 def prune_relations(client, path_list, question, model_name, width):
-    if len(path_list) < 4:
+    if len(path_list) <= width:
         return path_list
     
-    reasoning_path_list = [convert_to_txt(path) for path in path_list]
+    reasoning_path_list = [f'{i}. ' + convert_to_txt(path) + '.\n' for i, path in enumerate(path_list)]
     
     messages = [
                     {
                         'role': 'system',
-                        'content': f'You are asked to find the top-{width} reasoning paths extracted from a knowledge graph that are most likely be able to lead the anwer to the query.\
-                                    You should anwer with the index of the reasoning paths, starting from 0, separated by comma, e.g., 0,2,5. Nothin else should be included.\
-                                    The knowledge graph schema contains the following triplets:\
+                        'content': f'Identify the top-{width} reasoning paths extracted from a knowledge graph that are most likely to lead to the answer for the query. \
+                                    Respond with the indices of the reasoning paths, starting from 0, and separate them with commas (e.g., 0,2,5). Include nothing else in your response.\
+                                    The knowledge graph contains the following triplets:\
                                     (food, belongs to, category),\
                                     (food, has, ingredients), \
                                     (food, contains, nutrition tag), \
@@ -83,7 +83,7 @@ def prune_relations(client, path_list, question, model_name, width):
                     },
                     {
                         'role': 'user', 
-                        'content': f'The query is {question}, and the reasoning paths are: \n{reasoning_path_list}.\n Your choice of top-{width} reasoning paths are:' 
+                        'content': f'The query is {question}, and the reasoning paths are: \n{reasoning_path_list}. Your choice of top-{width} reasoning paths are:' 
                     }
                 ]
     
@@ -103,6 +103,10 @@ def prune_relations(client, path_list, question, model_name, width):
     indices = [int(index) for index in indices]
     # Delete indices that are out of range
     indices = [index for index in indices if index < len(path_list)]
+    
+    if len(indices) == 0:
+        return path_list[:width]
+    
     path_list = [path_list[index] for index in indices]
     return path_list
 
@@ -126,17 +130,17 @@ def find_entities(graph, path):
 
 
 def prune_entities(client, path_list, question, model_name, width):
-    if len(path_list) < 4:
+    if len(path_list) <= width:
         return path_list
     
-    reasoning_path_list = [convert_to_txt(path) for path in path_list]
+    reasoning_path_list = [f'{i}. ' + convert_to_txt(path) + '.\n' for i, path in enumerate(path_list)]
 
     messages = [
                     {
                         'role': 'system',
-                        'content': f'You are asked to find the top-{width} reasoning paths extracted from a knowledge graph that are most likely be able to lead the anwer to the query.\
-                                    You should anwer with the index of the reasoning paths, starting from 0, separated by comma, e.g., 0,2,5. Nothin else should be included.\
-                                    The knowledge graph schema contains the following triplets:\
+                        'content': f'Identify the top-{width} reasoning paths extracted from a knowledge graph that are most likely to lead to the answer for the query. \
+                                    Respond with the indices of the reasoning paths, starting from 0, and separate them with commas (e.g., 0,2,5). Include nothing else in your response.\
+                                    The knowledge graph contains the following triplets:\
                                     (food, belongs to, category),\
                                     (food, has, ingredients), \
                                     (food, contains, nutrition tag), \
@@ -147,7 +151,7 @@ def prune_entities(client, path_list, question, model_name, width):
                     },
                     {
                         'role': 'user', 
-                        'content': f'The query is {question}, and the reasoning paths are: \n{reasoning_path_list}.\n Your choice of top-{width} reasoning paths are:' 
+                        'content': f'The query is {question}, and the reasoning paths are: \n{reasoning_path_list}. Your choice of top-{width} reasoning paths are:' 
                     }
                 ]
     

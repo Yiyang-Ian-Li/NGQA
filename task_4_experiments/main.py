@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 load_dotenv()
 import argparse
 from dataset import Dataset
-from model import Retriever, Augmenter, Generator
+from model import Retriever, Augmenter, Generator, RetrievalEvaluator
 from evaluate import Evaluator
 
 import warnings
@@ -22,7 +22,8 @@ def main():
         "easy": "Important Note: Your output will strictly be Yes or No with no other words.",
         "medium": "Important Note: Your output must be strictly, with no extra words, separated by comma, \
             a list of nutrients with high or low before the nutrients among these options: carb, protein, sugar, sodium, cholesterol, \
-            saturated_fat, calorie. For example, the output is: high_carb, low_protein, high_sugar.",
+            saturated_fat, calorie. For example, the output is: high_carb, low_protein, high_sugar.\
+            You should only include the nutrient tags that are useful for the question.",
         "hard": "Important Note: Your output must be a Yes or No followed by strictly a list of nutrients with high or low as prefix among these options: \
             carb, protein, sugar, sodium, cholesterol, saturated fat, calorie. For example, the output is: Yes, because the food is high in carb, low in protein, high in sugar.",
     }
@@ -46,6 +47,14 @@ def main():
                 # Retrieve subgraphs
                 retriever = Retriever(graphs, model_name=args.model_name)
                 retrieved_graphs = retriever.retrieve(method=method, api_key=args.api_key, questions=questions)
+                # Evaluate retrieval
+                retrieval_evaluator = RetrievalEvaluator(graphs)
+                retrieval_evaluation_results = retrieval_evaluator.evaluate(retrieved_graphs)
+                
+                print(f"Retrieval evaluation results for Question Level={question_level}, Task Level={task_level}, Method={method}:")
+                for metric, value in retrieval_evaluation_results.items():
+                    print(f"{metric}: {value}")
+                    
                 # Augment graphs to text
                 augmenter = Augmenter()
                 textualized_graphs = augmenter.augment(retrieved_graphs)
@@ -56,10 +65,10 @@ def main():
                 predictions = generator.generate_predictions(questions, textualized_graphs)
                 # Evaluate predictions
                 evaluator = Evaluator()
-                results = evaluator.evaluate(task_level, predictions, answers)
+                final_output_evaluation_results = evaluator.evaluate(task_level, predictions, answers)
 
-                print(f"Results for Question Level={question_level}, Task Level={task_level}, Method={method}:")
-                for metric, value in results.items():
+                print(f"Final output evaluation results for Question Level={question_level}, Task Level={task_level}, Method={method}:")
+                for metric, value in final_output_evaluation_results.items():
                     print(f"{metric}: {value}")
                 
 
@@ -77,7 +86,7 @@ if __name__ == "__main__":
                         default="gpt-4o-mini",
                         help="Model name for generation.")
     parser.add_argument("--is_sample", type=bool, default=True, help="Whether to sample data or use the full dataset.")
-    parser.add_argument("--n", type=int, default=100, help="Number of rows to sample if sampling is enabled.")
+    parser.add_argument("--n", type=int, default=1000, help="Number of rows to sample if sampling is enabled.")
     
     parser.add_argument("--task_levels", nargs="+", default=["easy", "medium", "hard"], help="List of task levels to evaluate.")
     parser.add_argument("--question_levels", nargs="+", default=["easy", "medium", "hard"], help="List of question levels to evaluate.")

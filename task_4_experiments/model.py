@@ -3,6 +3,7 @@ from tqdm import tqdm
 import logging
 from llamaapi import LlamaAPI
 from openai import OpenAI
+import networkx as nx
 
 from utils import find_relations, prune_relations, find_entities, prune_entities, convert_to_sg
 
@@ -74,11 +75,12 @@ class Retriever:
                 else:
                     candidate_reasoning_path_list.append(reasoning_path)
             # Prune
-            candidate_reasoning_path_list = [path for path in candidate_reasoning_path_list if len(path) >= (i + 1) * 2]
+            # candidate_reasoning_path_list = [path for path in candidate_reasoning_path_list if len(path) >= (i + 1) * 2]
             if i > 1:
                 reasoning_path_list = prune_relations(client, candidate_reasoning_path_list, question, self.model_name, width)
             else:
                 reasoning_path_list = candidate_reasoning_path_list
+            reasoning_path_list = candidate_reasoning_path_list
             
             # Entity's round
             candidate_reasoning_path_list = []
@@ -132,6 +134,57 @@ class Retriever:
             else:
                 raise ValueError(f"Unknown retrieval method: {method}")
         return retrieved_graphs
+
+
+class RetrievalEvaluator:
+    def __init__(self, graphs):
+        """
+        Initialize the RetrievalEvaluator with a list of graphs.
+        Args: graphs (list): List of NetworkX graphs.
+        """
+        self.graphs = graphs
+    
+    def evaluate(self, retrieved_graphs):
+        '''
+        Evaluate the retrieved subgraphs against the optimal subgraphs.
+        '''
+        results = {
+            'Precision': 0,
+            'Recall': 0,
+            'F1 Score': 0
+        }
+        
+        for r_g, g in zip(retrieved_graphs, self.graphs):
+            optimal_nodes = set()
+            optimal_paths = nx.all_simple_paths(g.to_undirected(), 0, 1)
+            for path in optimal_paths:
+                for i in path:
+                    optimal_nodes.add(i)
+            optimal_names = [g.nodes[i]['attr'] for i in optimal_nodes]
+            
+            retrieved_names = [r_g.nodes[i]['attr'] for i in r_g.nodes]
+            
+            precision = len(set(retrieved_names).intersection(optimal_names)) / len(retrieved_names)
+            recall = len(set(retrieved_names).intersection(optimal_names)) / len(optimal_names)
+            
+            if precision + recall > 0:
+                f1_score = 2 * (precision * recall) / (precision + recall)
+            else:
+                f1_score = 0
+            
+            results['Precision'] += precision
+            results['Recall'] += recall
+            results['F1 Score'] += f1_score
+            
+        results['Precision'] /= len(self.graphs)
+        results['Recall'] /= len(self.graphs)
+        results['F1 Score'] /= len(self.graphs)
+        
+        # Round the results
+        for metric in results:
+            results[metric] = round(results[metric], 3)
+            
+        return results
 
 
 class Augmenter:
