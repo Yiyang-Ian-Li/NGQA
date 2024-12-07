@@ -20,7 +20,7 @@ def main():
 
     # Define note and method prompts
     note_prompts = {
-        "easy": "Important Note: Your output will strictly be Yes or No with no other words.",
+        "easy": "Important Note: Your output will strictly be Yes or No with no other words or punctuation marks.",
         "medium": "Important Note: Your output must be strictly, with no extra words, separated by comma, \
             a list of nutrients with high or low before the nutrients among these options: carb, protein, sugar, sodium, cholesterol, \
             saturated_fat, calorie. For example, the output is: high_carb, low_protein, high_sugar.\
@@ -34,7 +34,7 @@ def main():
         "KAPING": "Below are the extra information you use to answer the question, note that you should not use your general knowledge and the answer is among this information.",
         "ToG": "Below are the extra information you use to answer the question, note that you should not use your general knowledge and the answer is among this information.", 
         "Zero_CoT": "Let's think step by step",
-        "CoT_BaG": ""
+        "CoT_BaG": "Let's construct a graph with the nodes and edges, then provide the output adhering to the following guideline."
     }
 
     # Initialize dataset

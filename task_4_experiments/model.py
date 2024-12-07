@@ -262,7 +262,7 @@ class Generator:
         logging.getLogger("httpx").setLevel(logging.WARNING)
         self.logger = logging.getLogger(__name__)
 
-    def generate_prompt(self, question, textualized_graph, method=""):
+    def generate_prompt(self, question, textualized_graph):
         """
         Generate a prompt by combining question, method_prompt, textualized_graph, and note_prompt.
         """
