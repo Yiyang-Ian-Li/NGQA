@@ -5,6 +5,7 @@ import argparse
 from dataset import Dataset
 from model import Retriever, Augmenter, Generator, RetrievalEvaluator
 from evaluate import Evaluator
+from utils import generate_paragraph_cot_bag
 
 import warnings
 import logging
@@ -19,7 +20,7 @@ def main():
 
     # Define note and method prompts
     note_prompts = {
-        "easy": "Important Note: Your output will strictly be Yes or No with no other words.",
+        "easy": "Important Note: Your output will strictly be Yes or No with no other words or punctuation marks.",
         "medium": "Important Note: Your output must be strictly, with no extra words, separated by comma, \
             a list of nutrients with high or low before the nutrients among these options: carb, protein, sugar, sodium, cholesterol, \
             saturated_fat, calorie. For example, the output is: high_carb, low_protein, high_sugar.\
@@ -32,8 +33,8 @@ def main():
         "plain": "Below are the extra information you use to answer the question, note that you should not use your general knowledge and the answer is among this information.",
         "KAPING": "Below are the extra information you use to answer the question, note that you should not use your general knowledge and the answer is among this information.",
         "ToG": "Below are the extra information you use to answer the question, note that you should not use your general knowledge and the answer is among this information.", 
-        "zero_cot": "Let's think step by step.",
-        "cot_bag": "Let's construct a graph with the nodes and edges first."
+        "Zero_CoT": "Let's think step by step",
+        "CoT_BaG": ""
     }
 
     # Initialize dataset
@@ -58,6 +59,11 @@ def main():
                 # Augment graphs to text
                 augmenter = Augmenter()
                 textualized_graphs = augmenter.augment(retrieved_graphs)
+
+                # For CoT_BaG, convert textualized graphs into paragraph format
+                if method == "CoT_BaG":
+                    textualized_graphs = [generate_paragraph_cot_bag(graph) for graph in textualized_graphs]
+                
                 # Generate predictions
                 note_prompt = note_prompts.get(task_level, "Default note prompt")
                 method_prompt = method_prompts.get(method, "Default method prompt")

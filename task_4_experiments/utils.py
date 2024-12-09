@@ -173,3 +173,50 @@ def prune_entities(client, path_list, question, model_name, width):
     indices = [index for index in indices if index < len(path_list)]
     path_list = [path_list[index] for index in indices]
     return path_list
+
+def generate_paragraph_cot_bag(textualized_triplets):
+    """
+    Convert textualized triplets into a paragraph format for CoT_BaG.
+
+    Args:
+        textualized_triplets (str): A single string of textualized triplets.
+
+    Returns:
+        str: Paragraph format of the input triplets.
+    """
+    nodes = set()
+    edges = []
+
+    # Define possible relationships to extract
+    valid_relationships = ["belongs to", "has", "contains", "match", "contradict", "need"]
+
+    # Split the textualized triplets into individual triplets
+    triplet_list = textualized_triplets.strip().strip("()").split("), (")
+    
+    for triplet in triplet_list:
+        try:
+            # Ensure each triplet is well-formatted and split based on relationships
+            for relationship in valid_relationships:
+                if f" {relationship} " in triplet:
+                    source, target = triplet.split(f" {relationship} ", 1)
+                    source = source.strip()
+                    target = target.strip()
+
+                    # Add nodes and edges
+                    nodes.update([source, target])
+                    edges.append(f'an edge between node "{source}" directed to node "{target}" with attribute "{relationship}"')
+                    break
+            else:
+                print(f"Warning: Relationship not found in triplet '{triplet}'")  # Debugging
+        except Exception as e:
+            print(f"Error processing triplet '{triplet}': {e}")  # Debugging
+
+    # Convert nodes and edges to paragraph format
+    node_list = ", ".join(f'"{node}"' for node in nodes)
+    edge_list = ", ".join(edges)
+
+    paragraph = (
+        f"You are given a directed graph where the nodes and edges are: {edge_list}. Let's construct a graph with the nodes and edges, then provide the output adhering to the following guideline."
+    )
+
+    return paragraph

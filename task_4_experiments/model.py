@@ -123,7 +123,7 @@ class Retriever:
         """
         retrieved_graphs = []
         for i, graph in tqdm(enumerate(self.graphs), desc="Retrieving Subgraphs", total=len(self.graphs)):
-            if method == "plain" or method == "zero_cot" or method == "cot_bag":
+            if method == "plain" or method == "Zero_CoT" or method == "CoT_BaG":
                 retrieved_graphs.append(self.plain_retriever(graph))
             elif method == "KAPING":
                 retrieved_graphs.append(self.KAPING_retriever(graph))
