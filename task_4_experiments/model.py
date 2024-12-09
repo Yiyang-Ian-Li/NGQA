@@ -316,9 +316,7 @@ class Generator:
         # Generate and query prompts
         for question, textualized_graph in tqdm(zip(questions, textualized_graphs), desc="Generating Predictions", total=len(questions)):
             prompt = self.generate_prompt(question, textualized_graph)
-            print("Prompt: ", prompt)
             prediction = self.query_api(prompt)
-            print("Answer:", prediction)
             predictions.append(prediction)
             time.sleep(self.sleeptime)
 
