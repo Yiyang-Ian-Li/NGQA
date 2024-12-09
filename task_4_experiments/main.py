@@ -34,7 +34,7 @@ def main():
         "KAPING": "Below are the extra information you use to answer the question, note that you should not use your general knowledge and the answer is among this information.",
         "ToG": "Below are the extra information you use to answer the question, note that you should not use your general knowledge and the answer is among this information.", 
         "Zero_CoT": "Let's think step by step",
-        "CoT_BaG": "Let's construct a graph with the nodes and edges, then provide the output adhering to the following guideline."
+        "CoT_BaG": ""
     }
 
     # Initialize dataset
