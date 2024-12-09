@@ -190,8 +190,6 @@ def generate_paragraph_cot_bag(textualized_triplets):
     # Define possible relationships to extract
     valid_relationships = ["belongs to", "has", "contains", "match", "contradict", "need"]
 
-    # print("Debug: Input textualized_triplets:", textualized_triplets)  # Debugging
-
     # Split the textualized triplets into individual triplets
     triplet_list = textualized_triplets.strip().strip("()").split("), (")
     
@@ -206,7 +204,7 @@ def generate_paragraph_cot_bag(textualized_triplets):
 
                     # Add nodes and edges
                     nodes.update([source, target])
-                    edges.append(f'an edge between "{source}" directed to "{target}" with attribute "{relationship}"')
+                    edges.append(f'an edge between node "{source}" directed to node "{target}" with attribute "{relationship}"')
                     break
             else:
                 print(f"Warning: Relationship not found in triplet '{triplet}'")  # Debugging
@@ -218,10 +216,7 @@ def generate_paragraph_cot_bag(textualized_triplets):
     edge_list = ", ".join(edges)
 
     paragraph = (
-        # f"You are given a directed graph with these nodes: {node_list}. "
-        # f"And the edges are: {edge_list}. Let's construct a graph with the nodes and edges first."
-        f"You are given a directed graph where the nodes and edges are: {edge_list}. Your output must strictly adhere to the following guideline."
+        f"You are given a directed graph where the nodes and edges are: {edge_list}. Let's construct a graph with the nodes and edges, then provide the output adhering to the following guideline."
     )
 
-    # print("Debug: Generated paragraph:", paragraph)  # Debugging
     return paragraph
