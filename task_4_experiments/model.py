@@ -28,22 +28,34 @@ class Retriever:
 
     def KAPING_retriever(self, graph):
         """
-        KAPING-style retrieval: Find the user node (0) and food node (1),
-        and include their immediate neighbors in the subgraph.
-        
+        KAPING-style retrieval: Retrieve the user node (0), food node (1),
+        their immediate neighbors, and only the edges directly connecting them.
+    
+        Args:
+            graph (nx.Graph): Input graph.
+    
         Returns:
-            nx.Graph: Subgraph containing the user, food, and their neighbors.
+            nx.Graph: Subgraph containing the user, food, their neighbors,
+                      and only edges connected to user and food.
         """
-        # Initialize nodes to include in the subgraph
-        nodes_to_include = {0, 1}  # User and food nodes
-
-        # Find neighbors of user (0) and food (1)
-        for node in [0, 1]:
-            neighbors = set(graph.neighbors(node))
-            nodes_to_include.update(neighbors)
-
-        # Create a subgraph with selected nodes
-        return graph.subgraph(nodes_to_include)
+        # Initialize subgraph
+        subgraph = nx.DiGraph()
+    
+        # Define source nodes (user and food)
+        source_nodes = [0, 1]
+    
+        # Add source nodes to the subgraph
+        for source in source_nodes:
+            if source in graph:
+                # Add the source node
+                subgraph.add_node(source, **graph.nodes[source])
+    
+                # Add neighbors and edges directly connected to the source
+                for neighbor in graph.neighbors(source):
+                    subgraph.add_node(neighbor, **graph.nodes[neighbor])  # Add neighbor node
+                    subgraph.add_edge(source, neighbor, **graph[source][neighbor])  # Add edge from source to neighbor
+    
+        return subgraph
 
     def tog_retriever(self, graph, api_key, question):
         """
