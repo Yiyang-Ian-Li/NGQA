@@ -88,7 +88,7 @@ class Retriever:
                     candidate_reasoning_path_list.append(reasoning_path)
             # Prune
             # candidate_reasoning_path_list = [path for path in candidate_reasoning_path_list if len(path) >= (i + 1) * 2]
-            if i > 1:
+            if i > 0:
                 reasoning_path_list = prune_relations(client, candidate_reasoning_path_list, question, self.model_name, width)
             else:
                 reasoning_path_list = candidate_reasoning_path_list
@@ -104,7 +104,7 @@ class Retriever:
                 else:
                     candidate_reasoning_path_list.append(reasoning_path)
             # Prune
-            if i > 1:
+            if i > 0:
                 reasoning_path_list = prune_entities(client, candidate_reasoning_path_list, question, self.model_name, width)
             else:
                 reasoning_path_list = candidate_reasoning_path_list

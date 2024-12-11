@@ -65,33 +65,25 @@ def prune_relations(client, path_list, question, model_name, width):
     if len(path_list) <= width:
         return path_list
     
-    reasoning_path_list = [f'{i}. ' + convert_to_txt(path) + '.\n' for i, path in enumerate(path_list)]
+    reasoning_path_list = [f'{i + 1}. ' + convert_to_txt(path) + '.\n' for i, path in enumerate(path_list)]
     
     messages = [
                     {
                         'role': 'system',
                         'content': f'Identify the top-{width} reasoning paths extracted from a knowledge graph that are most likely to lead to the answer for the query. \
-                                    Respond with the indices of the reasoning paths, starting from 0, and separate them with commas (e.g., 0,2,5). Include nothing else in your response.\
-                                    The knowledge graph contains the following triplets:\
-                                    (food, belongs to, category),\
-                                    (food, has, ingredients), \
-                                    (food, contains, nutrition tag), \
-                                    (nutrition tag, match, status),\
-                                    (nutrition tag, contradict, status),\
-                                    (user, has, status), \
-                                    (user, has, dietary habits).'
+                                    Respond with the indices of the reasoning paths, starting from 1, and separate them with commas (e.g., 1,2,5). Include nothing else in your response.'
                     },
                     {
                         'role': 'user', 
-                        'content': f'The query is {question}, and the reasoning paths are: \n{reasoning_path_list}. Your choice of top-{width} reasoning paths are:' 
+                        'content': f'The query is {question}, and the reasoning paths are: \n{reasoning_path_list}. Your selected top-{width} reasoning paths are:' 
                     }
                 ]
     
     if 'gpt' in model_name:
         answer = client.chat.completions.create(
             model = model_name,
-            # temperature = 0.4,
-            messages = messages
+            messages = messages,
+            temperature = 0,
         ).choices[0].message.content
     elif 'llama' in model_name:
         answer = client.run({
@@ -100,7 +92,9 @@ def prune_relations(client, path_list, question, model_name, width):
         }).json()['choices'][0]['message']['content']
 
     indices = re.findall(r'\d+', answer)
-    indices = [int(index) for index in indices]
+    indices = [int(index) - 1 for index in indices]
+    if len(indices) > width:
+        indices = indices[:width]
     # Delete indices that are out of range
     indices = [index for index in indices if index < len(path_list)]
     
@@ -133,33 +127,25 @@ def prune_entities(client, path_list, question, model_name, width):
     if len(path_list) <= width:
         return path_list
     
-    reasoning_path_list = [f'{i}. ' + convert_to_txt(path) + '.\n' for i, path in enumerate(path_list)]
+    reasoning_path_list = [f'{i + 1}. ' + convert_to_txt(path) + '.\n' for i, path in enumerate(path_list)]
 
     messages = [
                     {
                         'role': 'system',
                         'content': f'Identify the top-{width} reasoning paths extracted from a knowledge graph that are most likely to lead to the answer for the query. \
-                                    Respond with the indices of the reasoning paths, starting from 0, and separate them with commas (e.g., 0,2,5). Include nothing else in your response.\
-                                    The knowledge graph contains the following triplets:\
-                                    (food, belongs to, category),\
-                                    (food, has, ingredients), \
-                                    (food, contains, nutrition tag), \
-                                    (nutrition tag, match, status),\
-                                    (nutrition tag, contradict, status),\
-                                    (user, has, status), \
-                                    (user, has, dietary habits).'
+                                    Respond with the indices of the reasoning paths, starting from 1, and separate them with commas (e.g., 1,2,5). Include nothing else in your response.'
                     },
                     {
                         'role': 'user', 
-                        'content': f'The query is {question}, and the reasoning paths are: \n{reasoning_path_list}. Your choice of top-{width} reasoning paths are:' 
+                        'content': f'The query is {question}, and the reasoning paths are: \n{reasoning_path_list}. Your selected top-{width} reasoning paths are:' 
                     }
                 ]
     
     if 'gpt' in model_name:
         answer = client.chat.completions.create(
             model = model_name,
-            # temperature = 0.4,
-            messages = messages
+            messages = messages,
+            temperature = 0,
         ).choices[0].message.content
     elif 'llama' in model_name:
         answer = client.run({
@@ -168,9 +154,15 @@ def prune_entities(client, path_list, question, model_name, width):
         }).json()['choices'][0]['message']['content']
 
     indices = re.findall(r'\d+', answer)
-    indices = [int(index) for index in indices]
+    indices = [int(index) - 1 for index in indices]
+    if len(indices) > width:
+        indices = indices[:width]
     # Delete indices that are out of range
     indices = [index for index in indices if index < len(path_list)]
+        
+    if len(indices) == 0:
+        return path_list[:width]
+    
     path_list = [path_list[index] for index in indices]
     return path_list
 

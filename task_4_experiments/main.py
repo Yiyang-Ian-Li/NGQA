@@ -23,8 +23,7 @@ def main():
         "easy": "Important Note: Your output will strictly be Yes or No with no other words or punctuation marks.",
         "medium": "Important Note: Your output must be strictly, with no extra words, separated by comma, \
             a list of nutrients with high or low before the nutrients among these options: carb, protein, sugar, sodium, cholesterol, \
-            saturated_fat, calorie. For example, the output is: high_carb, low_protein, high_sugar.\
-            You should only include the nutrient tags that are useful for the question.",
+            saturated_fat, calorie. For example, the output is: high_carb, low_protein, high_sugar.",
         "hard": "Important Note: Your output must be a Yes or No followed by strictly a list of nutrients with high or low as prefix among these options: \
             carb, protein, sugar, sodium, cholesterol, saturated fat, calorie. For example, the output is: Yes, because the food is high in carb, low in protein, high in sugar.",
     }
@@ -81,22 +80,22 @@ def main():
 if __name__ == "__main__":
     # Argument parser for hyperparameters
     parser = argparse.ArgumentParser(description="Run multi-level NutriGraphQA benchmark evaluation.")
-    parser.add_argument("--file_path", type=str, default="./processed_data/NutriGraphQA_benchmark.csv", help="Path to the dataset file.")
+    parser.add_argument("--file_path", type=str, default="./processed_data/NGQA_benchmark.csv", help="Path to the dataset file.")
     parser.add_argument("--api_key", type=str, 
-                        default=os.getenv('LLAMA_API_KEY'), 
-                        # default=os.getenv('OPENAI_API_KEY'),
+                        # default=os.getenv('LLAMA_API_KEY'), 
+                        default=os.getenv('OPENAI_API_KEY'),
                         help="API key for the model.")
     parser.add_argument("--model_name", type=str, 
-                        default="llama3.1-70b",
+                        # default="llama3.1-70b", 
                         # default="gpt-3.5-turbo", 
-                        # default="gpt-4o-mini",
+                        default="gpt-4o-mini",
                         help="Model name for generation.")
     parser.add_argument("--is_sample", type=bool, default=True, help="Whether to sample data or use the full dataset.")
-    parser.add_argument("--n", type=int, default=100, help="Number of rows to sample if sampling is enabled.")
+    parser.add_argument("--n", type=int, default=20, help="Number of rows to sample if sampling is enabled.")
     
-    parser.add_argument("--task_levels", nargs="+", default=["easy", "medium", "hard"], help="List of task levels to evaluate.")
-    parser.add_argument("--question_levels", nargs="+", default=["easy", "medium", "hard"], help="List of question levels to evaluate.")
-    parser.add_argument("--methods", nargs="+", default=["ToG"], help="List of methods to use for retrieval.")
+    parser.add_argument("--task_levels", nargs="+", default=["hard"], help="List of task levels to evaluate.")
+    parser.add_argument("--question_levels", nargs="+", default=['easy', 'medium', 'hard'], help="List of question levels to evaluate.")
+    parser.add_argument("--methods", nargs="+", default=["plain"], help="List of methods to use for retrieval.")
     
     args = parser.parse_args()
 
