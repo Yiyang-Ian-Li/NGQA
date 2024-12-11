@@ -164,8 +164,8 @@ class Evaluator:
             dict: Dictionary of evaluation metrics (Accuracy, Precision, Recall, F1 Score, ROC AUC).
         """
         # Preprocess predictions and ground truths into tag lists
-        y_true = predictions.apply(self._preprocess_labels)
-        y_pred = ground_truths.apply(self._preprocess_labels)
+        y_pred = predictions.apply(self._preprocess_labels)
+        y_true = ground_truths.apply(self._preprocess_labels)
 
         # Convert to binary format using MultiLabelBinarizer
         mlb = MultiLabelBinarizer(classes=self.tags)

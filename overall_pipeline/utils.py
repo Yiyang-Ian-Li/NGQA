@@ -219,7 +219,7 @@ def generate_graph(food_id, user_id, food_info, food_ingredients, user_info, use
 
     # Add the food node
     food = food_info[food_info['food_id'] == food_id]
-    node_list.append([1, {'name': food['food_desc'].item(), 'attr': food_id}])  # Node ID 1 is the food
+    node_list.append([1, {'name': int(food_id), 'attr': food['food_desc'].item()}])  # Node ID 1 is the food
 
     # Add the food category node
     food_category = food['WWEIA_desc'].iloc[0]
@@ -243,7 +243,7 @@ def generate_graph(food_id, user_id, food_info, food_ingredients, user_info, use
             node_id += 1
 
     # Add the user node
-    node_list.append([0, {'name': 'user', 'attr': user_id}])  # Node ID 0 is the user
+    node_list.append([0, {'name': int(user_id), 'attr': 'user'}])  # Node ID 0 is the user
     user = user_info[user_info['SEQN'] == user_id]
 
     # Add the user habits

@@ -42,19 +42,6 @@ class Dataset:
             return self.data[self.data['difficulty'] == question_level]
         return self.data
 
-    def fix_graph_names(self, graph):
-        """
-        TODO: This is a temporary fix. We can't allow the benchmark like this. FIX IT!
-        Swap the `name` and `attr` attributes for nodes 0 (user) and 1 (food).
-        """
-        for node in [0, 1]:
-            if node in graph.nodes:
-                # Swap 'name' and 'attr' attributes
-                node_data = graph.nodes[node]
-                if "name" in node_data and "attr" in node_data:
-                    node_data["name"], node_data["attr"] = node_data["attr"], node_data["name"]
-        return graph
-
     def get_graphs(self, filtered_data):
         """
         Generate a list of graphs corresponding to the questions in the filtered data.
@@ -77,9 +64,6 @@ class Dataset:
             for edge in edge_list:
                 if len(edge) == 3:  # [source, relationship, target]
                     graph.add_edge(edge[0], edge[2], relationship=edge[1])
-            
-            # TODO: Remove this temporary fix
-            graph = self.fix_graph_names(graph)
 
             graphs.append(graph)
         
