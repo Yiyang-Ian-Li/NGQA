@@ -1,6 +1,6 @@
 # Ignore directories
 data/*
-# processed_data/*
+processed_data/*
 fig/*
 
 
