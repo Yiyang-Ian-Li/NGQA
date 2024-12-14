@@ -70,7 +70,7 @@ def prune_relations(client, path_list, question, model_name, width):
     messages = [
                     {
                         'role': 'system',
-                        'content': f'Identify the top-{width} reasoning paths extracted from a knowledge graph that are most likely to lead to the answer for the query. \
+                        'content': f'Identify the top-{width} reasoning paths that are most likely to lead to the answer for the query. \
                                     Respond with the indices of the reasoning paths, starting from 1, and separate them with commas (e.g., 1,2,5). Include nothing else in your response.'
                     },
                     {
@@ -130,7 +130,7 @@ def prune_entities(client, path_list, question, model_name, width):
     messages = [
                     {
                         'role': 'system',
-                        'content': f'Identify the top-{width} reasoning paths extracted from a knowledge graph that are most likely to lead to the answer for the query. \
+                        'content': f'Identify the top-{width} reasoning paths that are most likely to lead to the answer for the query. \
                                     Respond with the indices of the reasoning paths, starting from 1, and separate them with commas (e.g., 1,2,5). Include nothing else in your response.'
                     },
                     {
