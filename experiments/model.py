@@ -1,7 +1,6 @@
 import time
 from tqdm import tqdm
 import logging
-from llamaapi import LlamaAPI
 from openai import OpenAI
 import networkx as nx
 
@@ -66,11 +65,12 @@ class Retriever:
         width = 5
         
         # Initialize the OpenAI client
-        if 'llama' in self.model_name:
-            client = LlamaAPI(api_key)
-        else:
+        if 'gpt' in self.model_name:
             client = OpenAI(api_key=api_key)
-        
+        else:
+            # TODO - Implement the LLM API client
+            pass
+
         # Initial raw subgraph
         reasoning_path_list = [[graph.nodes[0]['attr']], [graph.nodes[1]['attr']]]
         
@@ -259,10 +259,14 @@ class Generator:
             sleeptime (int): Time (in seconds) to sleep between API calls to avoid rate limiting.
         """
         self.api_key = api_key
-        if 'llama' in model_name:
-            self.llama = LlamaAPI(self.api_key)  # Initialize API client with the key
-        elif 'gpt' in model_name:
-            self.gpt = OpenAI(api_key=self.api_key)
+        
+        if 'gpt' in model_name:
+            self.gpt = OpenAI(
+                api_key=self.api_key
+            )
+        else:
+            # TODO - Implement the LLM API client
+            pass
         
         self.model_name = model_name
         self.system_prompt = "Act as a nutritionist. Analyze if a given food is healthy to a user and why."
@@ -288,20 +292,18 @@ class Generator:
         
         for attempt in range(retries):
             try:
-                if 'llama' in self.model_name:
-                    api_request_json = {
-                        "model": self.model_name,
-                        "messages": messages
-                    }
-                    response = self.llama.run(api_request_json).json()['choices'][0]['message']['content']
-                    
-                elif 'gpt' in self.model_name:  
+                if 'gpt' in self.model_name:  
                     response = self.gpt.chat.completions.create(
                         model=self.model_name,
                         messages=messages,
                         temperature=0
                     ).choices[0].message.content
-                
+                    
+                else:
+                    # TODO - Implement the LLM API call
+                    pass
+                    
+                # time.sleep(0.15)
                 return response
             except Exception as e:
                 self.logger.error(f"API Error: {e}")

@@ -1,6 +1,8 @@
 # Ignore directories
 data/*
 processed_data/*
+fig/*
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

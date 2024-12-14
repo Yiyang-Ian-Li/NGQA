@@ -85,11 +85,9 @@ def prune_relations(client, path_list, question, model_name, width):
             messages = messages,
             temperature = 0,
         ).choices[0].message.content
-    elif 'llama' in model_name:
-        answer = client.run({
-            'model': model_name,
-            'messages': messages
-        }).json()['choices'][0]['message']['content']
+    else:
+        # TODO - Implement the LLM API call
+        pass
 
     indices = re.findall(r'\d+', answer)
     indices = [int(index) - 1 for index in indices]
@@ -147,11 +145,9 @@ def prune_entities(client, path_list, question, model_name, width):
             messages = messages,
             temperature = 0,
         ).choices[0].message.content
-    elif 'llama' in model_name:
-        answer = client.run({
-            'model': model_name,
-            'messages': messages
-        }).json()['choices'][0]['message']['content']
+    else:
+        # TODO - Implement the LLM API call
+        pass
 
     indices = re.findall(r'\d+', answer)
     indices = [int(index) - 1 for index in indices]
