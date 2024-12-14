@@ -202,10 +202,15 @@ def generate_paragraph_cot_bag(textualized_triplets):
 
     # Convert nodes and edges to paragraph format
     node_list = ", ".join(f'"{node}"' for node in nodes)
-    edge_list = ", ".join(edges)
+    nodes_edges_list = ", ".join(edges)
 
     paragraph = (
-        f"You are given a directed graph where the nodes and edges are: {edge_list}. Let's construct a graph with the nodes and edges, then provide the output adhering to the following guideline."
+        f"""
+        Here is the description of the graph: 
+        This is the list of edges: {nodes_edges_list}.
+        Let's first construct a graph with the given nodes and edges. Let's think step by step. Determine the healthiness of the food by traversing the graph and determining the nutritional properties of the food, then compare them to the health status, dietary need and habits of the user. Do not be too strict with your criteria, only focus on a few main nutritional tags that strongly indicate its healthiness or unhealthiness to the particular diet or health status the user has. Some nutritional tags might not be as important in determining healthiness. Do not regard a food as unhealthy just because it has some negative nutrition tags because these tags might not always be important in the user's case.
+        Provide the output adhering to the following guideline.
+        """    
     )
 
     return paragraph
