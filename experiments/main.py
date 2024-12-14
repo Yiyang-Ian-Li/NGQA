@@ -30,8 +30,9 @@ def main():
         "plain": "Below are the extra information you use to answer the question, note that you should not use your general knowledge and the answer is among this information.",
         "KAPING": "Below are the extra information you use to answer the question, note that you should not use your general knowledge and the answer is among this information.",
         "ToG": "Below are the extra information you use to answer the question, note that you should not use your general knowledge and the answer is among this information.", 
-        "CoT-Zero": "Let's think step by step.",
-        "CoT-BAG": "Let's construct a graph with the nodes and edges first."
+        "CoT_Zero": "Below are the extra information you use to answer the question, note that you should not use your general knowledge and the answer is among this information. Let's think step by step to determine the healthiness of the food, by extracting the nutritional properties of the food from the given graph, then comparing them to the nutrition requirements of the health status, dietary need and habits of the user. Do not be too strict with your criteria, since not all nutritional tags are important in determining the food's healthiness.",
+        "CoT_BaG": "Below are the extra information you use to answer the question, note that you should not use your general knowledge and the answer is among this information. You will be given the textual description of a directed graph."
+
     }
 
     # Initialize dataset

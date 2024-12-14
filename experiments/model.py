@@ -135,7 +135,7 @@ class Retriever:
         """
         retrieved_graphs = []
         for i, graph in tqdm(enumerate(self.graphs), desc="Retrieving Subgraphs", total=len(self.graphs)):
-            if method == "plain" or method == "CoT-Zero" or method == "CoT-BAG":
+            if method == "plain" or method == "CoT_Zero" or method == "CoT_BaG":
                 retrieved_graphs.append(self.plain_retriever(graph))
             elif method == "KAPING":
                 retrieved_graphs.append(self.KAPING_retriever(graph))
@@ -238,7 +238,7 @@ class Augmenter:
             else:
                 raise ValueError(f"Unknown augmentation method: {method}")
         
-            if self.method == 'CoT-BAG':
+            if self.method == 'CoT_BaG':
                 textualized_graph = generate_paragraph_cot_bag(textualized_graph)
                 
             textualized_graphs.append(textualized_graph)
