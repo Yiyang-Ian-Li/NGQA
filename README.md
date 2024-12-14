@@ -12,7 +12,7 @@ Install the required packages by running:
 pip install requirements.txt
 ```
 
-To construct the benchmark from scratch, please follow the instructions below. There is also a ready-to-go benchmark file in `processed_data/` folder named `NGQA_benchmark.csv`.
+To construct the benchmark from scratch, please follow the instructions below. You can also download the ready-to-go benchmark file [here](https://drive.google.com/file/d/1CpFbd5WWjZhu20utl0X5Tsoemc1pSmgF/view?usp=sharing), and create a `processed_data/` folder under the main folder, then put the benchmark file into it.
 
 1. Download the raw data from [here](https://drive.google.com/drive/folders/1bR_ZGGxet19GC7rbqB5y7oor4WsaGylJ) and put the entire `data/` folder under the main folder.
 
