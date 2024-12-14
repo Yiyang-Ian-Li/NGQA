@@ -4,7 +4,7 @@ import logging
 from openai import OpenAI
 import networkx as nx
 
-from utils import find_relations, prune_relations, find_entities, prune_entities, convert_to_sg
+from utils import find_relations, prune_relations, find_entities, prune_entities, convert_to_sg, generate_paragraph_cot_bag
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -135,7 +135,7 @@ class Retriever:
         """
         retrieved_graphs = []
         for i, graph in tqdm(enumerate(self.graphs), desc="Retrieving Subgraphs", total=len(self.graphs)):
-            if method == "plain" or method == "zero_cot" or method == "cot_bag":
+            if method == "plain" or method == "CoT-Zero" or method == "CoT-BAG":
                 retrieved_graphs.append(self.plain_retriever(graph))
             elif method == "KAPING":
                 retrieved_graphs.append(self.KAPING_retriever(graph))
@@ -200,8 +200,8 @@ class RetrievalEvaluator:
 
 
 class Augmenter:
-    def __init__(self):
-        pass
+    def __init__(self, method='plain'):
+        self.method = method
 
     def graph_to_triplets(self, graph):
         """
@@ -237,8 +237,13 @@ class Augmenter:
                 textualized_graph = self.graph_to_triplets(graph)
             else:
                 raise ValueError(f"Unknown augmentation method: {method}")
+        
+            if self.method == 'CoT-BAG':
+                textualized_graph = generate_paragraph_cot_bag(textualized_graph)
+                
             textualized_graphs.append(textualized_graph)
-
+                
+        
         return textualized_graphs
 
 

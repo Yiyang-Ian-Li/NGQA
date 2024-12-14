@@ -30,8 +30,8 @@ def main():
         "plain": "Below are the extra information you use to answer the question, note that you should not use your general knowledge and the answer is among this information.",
         "KAPING": "Below are the extra information you use to answer the question, note that you should not use your general knowledge and the answer is among this information.",
         "ToG": "Below are the extra information you use to answer the question, note that you should not use your general knowledge and the answer is among this information.", 
-        "zero_cot": "Let's think step by step.",
-        "cot_bag": "Let's construct a graph with the nodes and edges first."
+        "CoT-Zero": "Let's think step by step.",
+        "CoT-BAG": "Let's construct a graph with the nodes and edges first."
     }
 
     # Initialize dataset
@@ -54,7 +54,7 @@ def main():
                     print(f"{metric}: {value}")
                     
                 # Augment graphs to text
-                augmenter = Augmenter()
+                augmenter = Augmenter(args.method)
                 textualized_graphs = augmenter.augment(retrieved_graphs)
                 # Generate predictions
                 note_prompt = note_prompts.get(task_level)
