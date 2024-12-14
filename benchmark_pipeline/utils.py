@@ -239,7 +239,7 @@ def generate_graph(food_id, user_id, food_info, food_ingredients, user_info, use
     for column in food_primary_nutrition_tags:
         if food[column].item() == 1:
             node_list.append([node_id, {'name': 'food_nutrition_tag', 'attr': column}])
-            edge_list.append([1, 'belongs to', node_id])  # Food has this nutrition tag
+            edge_list.append([1, 'contains', node_id])  # Food has this nutrition tag
             node_id += 1
 
     # Add the user node
