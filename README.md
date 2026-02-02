@@ -1,4 +1,5 @@
-# NGQA: A Nutritional Graph Question Answering Benchmark for Personalized Health-aware Nutritional Reasoning
+# NGQA
+[ACL 2025] A Nutritional Graph Question Answering Benchmark for Personalized Health-aware Nutritional Reasoning
 
 ## Overview
 
